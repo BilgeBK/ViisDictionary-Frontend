@@ -18,7 +18,6 @@ export default function HomeScreen() {
     const [loading, setLoading] = useState(true);
     const [isTranslating, setIsTranslating] = useState(false);
 
-    // State'ler artık isim değil, ID tutuyor
     const [sourceLangId, setSourceLangId] = useState<number | null>(null);
     const [targetLangId, setTargetLangId] = useState<number | null>(null);
 
@@ -29,43 +28,6 @@ export default function HomeScreen() {
         fetchLanguages();
     }, []);
 
-    // const fetchLanguages = async () => {
-    //     try {
-    //         console.log("İstek atılan URL:", `${BASE_URL}/language/allLanguages`);
-    //
-    //         const response = await fetch(`${BASE_URL}/language/allLanguages`, {
-    //             method: 'GET',
-    //             headers: {
-    //                 'Accept': 'application/json',
-    //                 'Content-Type': 'application/json',
-    //             },
-    //         });
-    //
-    //         if (!response.ok) {
-    //             throw new Error(`Sunucu hatası: ${response.status}`);
-    //         }
-    //
-    //         const data: Language[] = await response.json();
-    //         console.log("Gelen diller:", data);
-    //
-    //         if (data && data.length > 0) {
-    //             console.error('data sourceid is ', data[0].languageId);
-    //             console.error('data sourceLangid is ', sourceLangId);
-    //             console.error('data targetid is ', data[1].languageId);
-    //             console.error('data targetLangid is ', targetLangId);
-    //             setLanguages(data);
-    //             setSourceLangId(data[0].languageId);
-    //             setTargetLangId(data[1] ? data[1].languageId : data[0].languageId);
-    //         }
-    //     } catch (error: any) {
-    //         console.error("Yükleme Hatası:", error);
-    //         // Hatanın ne olduğunu ekranda tam görelim
-    //         Alert.alert("Bağlantı Sorunu", `Hata: ${error.message}\nURL: ${BASE_URL}`);
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
-
     const fetchLanguages = async () => {
         try {
             const response = await fetch(ENDPOINTS.LANGUAGES);
@@ -74,17 +36,14 @@ export default function HomeScreen() {
             if (data && data.length > 0) {
                 setLanguages(data);
 
-                // ÖNEMLİ: State'i doğrudan verinin içindeki ID ile dolduruyoruz
                 const initialSource = data[0].languageId;
                 const initialTarget = data[1] ? data[1].languageId : data[0].languageId;
 
                 setSourceLangId(initialSource);
                 setTargetLangId(initialTarget);
-
-                console.log("Başlangıç ID'leri atandı:", initialSource, initialTarget);
             }
         } catch (error) {
-            console.error("Diller yüklenirken hata:", error);
+            console.error("Error loading languages:", error);
         } finally {
             setLoading(false)
         }
@@ -92,11 +51,9 @@ export default function HomeScreen() {
 
 
     const handleTranslate = async () => {
-        // Debug için log basalım, terminalde ne gittiğini gör
-        console.log("Gönderilen ID'ler:", sourceLangId, targetLangId);
 
         if (!inputText.trim() || sourceLangId == null || targetLangId == null) {
-            Alert.alert("Uyarı", "Lütfen metin girin ve dilleri seçtiğinizden emin olun.");
+            Alert.alert("Warning", "Please enter your text and make sure you select the languages.");
             return;
         }
 
@@ -107,65 +64,28 @@ export default function HomeScreen() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     originalText: inputText,
-                    sourceLanguageId: Number(sourceLangId), // Zorunlu sayıya çevir
-                    targetLanguageId: Number(targetLangId)  // Zorunlu sayıya çevir
+                    sourceLanguageId: Number(sourceLangId),
+                    targetLanguageId: Number(targetLangId)
                 }),
             });
 
             const result = await response.text();
             setResultText(result);
         } catch (error) {
-            Alert.alert("Hata", "Çeviri isteği başarısız.");
+            Alert.alert("Error","Translation request failed.");
         } finally {
             setIsTranslating(false);
         }
     };
 
-    // const handleTranslate = async () => {
-    //     if (!inputText.trim() || sourceLangId === null || targetLangId === null) {
-    //         Alert.alert("Uyarı", "Lütfen metin girin ve dilleri seçin.");
-    //         return;
-    //     }
-    //
-    //     setIsTranslating(true);
-    //
-    //     try {
-    //         const response = await fetch(`${BASE_URL}/translate`, {
-    //             method: 'POST',
-    //             headers: {
-    //                 'Content-Type': 'application/json',
-    //                 'Accept': 'application/json'
-    //             },
-    //             body: JSON.stringify({
-    //                 originalText: inputText,
-    //                 sourceLangId: sourceLangId, // ID gönderiyoruz
-    //                 targetLangId: targetLangId  // ID gönderiyoruz
-    //             }),
-    //         });
-    //
-    //         // Backend String (Düz metin) döndüğü için .text() kullanıyoruz
-    //         const result = await response.text();
-    //         setResultText(result);
-    //     } catch (error) {
-    //         console.error("Çeviri Hatası:", error);
-    //         Alert.alert("Hata", "Çeviri sırasında bir sorun oluştu.");
-    //     } finally {
-    //         setIsTranslating(false);
-    //     }
-    // };
-
     const handleSwapLanguages = () => {
-        // Mevcut değerleri yedekle (temp)
         const tempId = sourceLangId;
         const tempText = inputText;
         const tempResult = resultText;
 
-        // ID'leri takas et
         setSourceLangId(targetLangId);
         setTargetLangId(tempId);
 
-        // Metinleri takas et (Kullanıcı "merhaba" yazdıysa ve çeviri "hello" ise,
-        // ok tuşuna basınca "hello" yukarı çıksın ki tekrar çevirebilsin)
         setInputText(tempResult);
         setResultText(tempText);
     };
@@ -219,10 +139,10 @@ export default function HomeScreen() {
                     </View>
                 </View>
 
-                {/* Giriş Alanı */}
+                {/* Input Section */}
                 <TextInput
                     style={styles.input}
-                    placeholder="Metin girin..."
+                    placeholder="Enter the text.."
                     multiline
                     value={inputText}
                     onChangeText={setInputText}
@@ -240,10 +160,9 @@ export default function HomeScreen() {
                     )}
                 </TouchableOpacity>
 
-                {/* Sonuç Alanı */}
                 {resultText !== '' && (
                     <View style={styles.resultBox}>
-                        <Text style={styles.resultLabel}>Translatıon</Text>
+                        <Text style={styles.resultLabel}>Translation</Text>
                         <Text style={styles.resultText}>{resultText}</Text>
                     </View>
                 )}
