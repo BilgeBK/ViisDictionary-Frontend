@@ -4,7 +4,7 @@
     "slug": "ViisDictionary",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/ViisDictionary.png",
     "scheme": "viisdictionary",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
